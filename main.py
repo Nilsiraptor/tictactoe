@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 # create window
 root = Tk()
 root.title("TicTacToe")
+root.iconbitmap("Bilder/tictactoe.ico")
 
 # add menu bar
 menu = Menu(root)
