@@ -2,6 +2,34 @@ from tkinter import *
 from socket import *
 from PIL import Image, ImageTk
 
+# functions
+def draw_board(canvas):
+    root.update()
+    width = canvas.winfo_width()
+    height = canvas.winfo_height()
+    canvas.create_line(width//3, 0.03*height, width//3, 0.97*height, capstyle="round", width=12)
+    canvas.create_line(2*width//3, 0.03*height, 2*width//3, 0.97*height, capstyle="round", width=12)
+
+    canvas.create_line(0.03*width, height//3, 0.97*width, height//3, capstyle="round", width=12)
+    canvas.create_line(0.03*width, 2*height//3, 0.97*width, 2*height//3, capstyle="round", width=12)
+
+def draw_cross(canvas, i, j):
+    root.update()
+    width = canvas.winfo_width()
+    height = canvas.winfo_height()
+    x = i*width//3 + width//6
+    y = j*height//3 + height//6
+    canvas.create_line(x-width//8, y-height//8, x+width//8, y+height//8, capstyle="round", width=12)
+    canvas.create_line(x+width//8, y-height//8, x-width//8, y+height//8, capstyle="round", width=12)
+
+def draw_circle(canvas, i, j):
+    root.update()
+    width = canvas.winfo_width()
+    height = canvas.winfo_height()
+    x = i*width//3 + width//6
+    y = j*height//3 + height//6
+    canvas.create_oval(x-width//8, y-height//8, x+width//8, y+height//8, width=12)
+
 # create window
 root = Tk()
 root.title("TicTacToe")
@@ -18,7 +46,7 @@ menu.add_cascade(label="Hilfe", menu=help_menu)
 status_bar = Label(root, text="Status", anchor="e", relief="sunken")
 status_bar.pack(side="bottom", fill="x")
 
-canvas = Canvas(root, width=400, height=400, relief="ridge", bd=2)
+canvas = Canvas(root, width=400, height=400)
 canvas.pack(side="left")
 
 right_frame = Frame(root)
@@ -28,13 +56,13 @@ ip_frame = Frame(right_frame, relief="ridge", bd=2)
 ip_frame.pack(fill="x")
 
 join_padding = Frame(right_frame, relief="ridge", bd=2)
-join_padding.pack(fill="both")
+join_padding.pack(fill="both", expand=True)
 
 join_frame = Frame(join_padding)
 join_frame.pack(fill="both", padx=20, pady=20)
 
 host_padding = Frame(right_frame, relief="ridge", bd=2)
-host_padding.pack(fill="both")
+host_padding.pack(fill="both", expand=True)
 
 host_frame = Frame(host_padding)
 host_frame.pack(fill="both", padx=20, pady=20)
@@ -58,11 +86,9 @@ join_label.pack(side="left", fill="x")
 host_button = Button(host_frame, text="Host Server")
 host_button.pack(fill="both")
 
-start_button = Button(host_frame, text="Neues Spiel")
+start_button = Button(host_frame, text="Neues Spiel", command=lambda: canvas.delete("all"))
 start_button.pack(fill="both")
 
-board = PhotoImage(file="Bilder/tictactoe.gif")
-canvas.create_image(200, 200, image=board)
-
+draw_board(canvas)
 
 root.mainloop()
