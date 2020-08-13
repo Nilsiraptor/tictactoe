@@ -79,7 +79,7 @@ ip_label = Label(ip_frame, text="Deine IP-Adresse:", anchor="e")
 ip_label.pack(side="left", fill="x")
 ip_label.pack_forget()
 
-join_button = Button(join_frame, text="Beitreten", command=lambda: join_button.flash())
+join_button = Button(join_frame, text="Beitreten")
 join_button.pack(side="bottom", fill="both")
 
 join_entry = Entry(join_frame, justify="left")
