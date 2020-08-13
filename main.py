@@ -3,8 +3,21 @@ from tkinter import *
 from socket import *
 from PIL import Image, ImageTk
 
+# game variables ---------------------------------------------------------------
+ingame = False
+player = None
+board_state = [0]*9
+
+# connection variables ---------------------------------------------------------
+HEADER_SIZE = 2
+client_socket = None
+server_socket = None
+SERVER = FALSE
+connected = False
+
 # functions --------------------------------------------------------------------
 def draw_board(canvas):
+    global board_state
     root.update()
     width = canvas.winfo_width()
     height = canvas.winfo_height()
@@ -13,6 +26,13 @@ def draw_board(canvas):
 
     canvas.create_line(0.03*width, height//3, 0.97*width, height//3, capstyle="round", width=12)
     canvas.create_line(0.03*width, 2*height//3, 0.97*width, 2*height//3, capstyle="round", width=12)
+
+    for i in range(3):
+        for j in range(3):
+            if board_state[i+j*3] == 1:
+                draw_cross(canvas, i, j)
+            elif board_state[i+j*3] == 2:
+                draw_circle(canvas, i, j)
 
 def draw_cross(canvas, i, j):
     root.update()
@@ -34,6 +54,18 @@ def draw_circle(canvas, i, j):
 def resize(event, canvas):
     canvas.delete("all")
     draw_board(canvas)
+
+def new_game():
+    pass
+
+def connect():
+    pass
+
+def start_server():
+    pass
+
+def clicked(e):
+    pass
 
 # create window ----------------------------------------------------------------
 root = Tk()
@@ -79,7 +111,7 @@ ip_label = Label(ip_frame, text="Deine IP-Adresse:", anchor="e")
 ip_label.pack(side="left", fill="x")
 ip_label.pack_forget()
 
-join_button = Button(join_frame, text="Beitreten")
+join_button = Button(join_frame, text="Beitreten", command=connect)
 join_button.pack(side="bottom", fill="both")
 
 join_entry = Entry(join_frame, justify="left")
@@ -88,10 +120,10 @@ join_entry.pack(side="right", fill="x")
 join_label = Label(join_frame, text="IP-Adresse:", anchor="e")
 join_label.pack(side="left", fill="x")
 
-host_button = Button(host_frame, text="Host Server")
+host_button = Button(host_frame, text="Host Server", command=start_server)
 host_button.pack(fill="both")
 
-start_button = Button(host_frame, text="Neues Spiel")
+start_button = Button(host_frame, text="Neues Spiel", command=new_game)
 start_button.pack(fill="both")
 
 # settings ---------------------------------------------------------------------
@@ -101,6 +133,7 @@ root.minsize(root.winfo_width(), root.winfo_height())
 
 # bind redraw to resize event
 root.bind("<Configure>", lambda e: resize(e, canvas))
+canvas.bind("<Button-1>", lambda e: clicked(e))
 
 # graphic setup ----------------------------------------------------------------
 draw_board(canvas)
