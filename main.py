@@ -2,6 +2,9 @@
 from tkinter import *
 from socket import *
 from PIL import Image, ImageTk
+import publicip
+from contextlib import redirect_stdout
+import io
 
 # game variables ---------------------------------------------------------------
 ingame = False
@@ -13,12 +16,13 @@ HEADER_SIZE = 2
 client_socket = None
 server_socket = None
 SERVER = FALSE
+PORT = 25565
 connected = False
 
 # functions --------------------------------------------------------------------
 def draw_board(canvas):
     global board_state
-    root.update()
+    #root.update()
     width = canvas.winfo_width()
     height = canvas.winfo_height()
     canvas.create_line(width//3, 0.03*height, width//3, 0.97*height, capstyle="round", width=12)
@@ -35,7 +39,7 @@ def draw_board(canvas):
                 draw_circle(canvas, i, j)
 
 def draw_cross(canvas, i, j):
-    root.update()
+    #root.update()
     width = canvas.winfo_width()
     height = canvas.winfo_height()
     x = i*width//3 + width//6
@@ -44,7 +48,7 @@ def draw_cross(canvas, i, j):
     canvas.create_line(x+width//8, y-height//8, x-width//8, y+height//8, capstyle="round", width=12)
 
 def draw_circle(canvas, i, j):
-    root.update()
+    #root.update()
     width = canvas.winfo_width()
     height = canvas.winfo_height()
     x = i*width//3 + width//6
@@ -62,7 +66,27 @@ def connect():
     pass
 
 def start_server():
-    pass
+    global server_socket, SERVER, IP
+
+    if not SERVER:
+        server_socket = socket(AF_INET, SOCK_STREAM)
+        server_socket.bind(("0.0.0.0", PORT))
+        server_socket.listen()
+
+        status_bar.config(text="Server is now online")
+        f = io.StringIO()
+        with redirect_stdout(f):
+            publicip.get()
+
+        IP = f.getvalue().strip()
+
+        ip_text.config(state="normal")
+        ip_text.insert(0, IP)
+        ip_text.config(state="readonly")
+        ip_label.pack()
+
+        host_button.config(text="Stop Server")
+        start_button.config(state="normal")
 
 def clicked(e):
     pass
