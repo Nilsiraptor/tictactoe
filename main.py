@@ -88,6 +88,10 @@ def start_server():
         host_button.config(text="Stop Server")
         start_button.config(state="normal")
 
+        SERVER = True
+    else:
+        pass
+
 def clicked(e):
     pass
 
