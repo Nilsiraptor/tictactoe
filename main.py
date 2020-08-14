@@ -123,7 +123,7 @@ join_label.pack(side="left", fill="x")
 host_button = Button(host_frame, text="Host Server", command=start_server)
 host_button.pack(fill="both")
 
-start_button = Button(host_frame, text="Neues Spiel", command=new_game)
+start_button = Button(host_frame, text="Neues Spiel", command=new_game, state="disabled")
 start_button.pack(fill="both")
 
 # settings ---------------------------------------------------------------------
