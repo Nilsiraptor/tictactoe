@@ -63,7 +63,34 @@ def new_game():
     pass
 
 def connect():
-    pass
+    global client_socket, connected
+    if not connected:
+        client_socket = socket(AF_INET, SOCK_STREAM)
+        ip_str = join_entry.get().strip()
+        try:
+            IP, PORT = ip_str.split(":")
+            PORT = int(PORT)
+        except:
+            IP = ip_str
+            PORT = 25565
+        try:
+            client_socket.connect((IP, PORT))
+        except Exception as e:
+            status_bar.config(text=str(e))
+            return False
+
+        client_socket.setblocking(False)
+
+        status_bar.config(text="Connected")
+
+        join_entry.config(state="readonly")
+        join_button.config(state="disabled")
+        host_button.config(state="disabled")
+
+        connected = True
+
+        root.after(100, receive_message)
+
 
 def start_server():
     global server_socket, SERVER, IP
@@ -88,9 +115,19 @@ def start_server():
         host_button.config(text="Stop Server")
         start_button.config(state="normal")
 
+        join_button.config(state="disabled")
         SERVER = True
+        root.after(100, accept_connection)
     else:
         pass
+
+def accept_connection():
+    print("Lols")
+    root.after(100, accept_connection)
+
+def receive_message():
+    print("Lul")
+    root.after(100, receive_message)
 
 def clicked(e):
     pass
