@@ -79,7 +79,7 @@ def connect():
             status_bar.config(text=str(e))
             return False
 
-        client_socket.setblocking(False)
+        client_socket.settimeout(0.001)
 
         status_bar.config(text="Connected")
 
@@ -100,6 +100,8 @@ def start_server():
         server_socket.bind(("0.0.0.0", PORT))
         server_socket.listen()
 
+        server_socket.settimeout(0.001)
+
         status_bar.config(text="Server is now online")
         f = io.StringIO()
         with redirect_stdout(f):
@@ -108,6 +110,7 @@ def start_server():
         IP = f.getvalue().strip()
 
         ip_text.config(state="normal")
+        ip_text.delete(0, len(ip_text.get()))
         ip_text.insert(0, IP)
         ip_text.config(state="readonly")
         ip_label.pack()
@@ -119,15 +122,29 @@ def start_server():
         SERVER = True
         root.after(100, accept_connection)
     else:
-        pass
+        host_button.config(text="Host Server")
+        start_button.config(state="disabled")
+        join_button.config(state="normal")
+        SERVER = False
 
 def accept_connection():
-    print("Lols")
-    root.after(100, accept_connection)
+    if SERVER:
+        try:
+            client_socket, address = server_socket.accept()
+        except timeout as e:
+            root.after(100, accept_connection)
+            return False
+        else:
+            print("lol")
 
 def receive_message():
-    print("Lul")
-    root.after(100, receive_message)
+    if connected:
+        try:
+            msg = client_socket.recv(1024)
+        except timeout as e:
+            root.after(100, receive_message)
+            return False
+        print("lul")
 
 def clicked(e):
     pass
