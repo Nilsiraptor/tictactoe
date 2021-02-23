@@ -55,9 +55,17 @@ def draw_circle(canvas, i, j):
     y = j*height//3 + height//6
     canvas.create_oval(x-width//8, y-height//8, x+width//8, y+height//8, width=12)
 
+def motion(e):
+    print(e)
+
 def resize(event, canvas):
     canvas.delete("all")
     draw_board(canvas)
+
+def closed():
+    if connected:
+        print("haha")
+        disconnect()
 
 def new_game():
     pass
@@ -81,7 +89,7 @@ def connect():
 
         client_socket.settimeout(0.001)
 
-        status_bar.config(text="Connected")
+        status_bar.config(text="Connected to server")
 
         join_entry.config(state="readonly")
         join_button.config(state="disabled")
@@ -91,6 +99,9 @@ def connect():
 
         root.after(100, receive_message)
 
+def disconnect():
+    global connected
+    connected = False
 
 def start_server():
     global server_socket, SERVER, IP
@@ -116,7 +127,6 @@ def start_server():
         ip_label.pack()
 
         host_button.config(text="Stop Server")
-        start_button.config(state="normal")
 
         join_button.config(state="disabled")
         SERVER = True
@@ -135,6 +145,8 @@ def accept_connection():
             root.after(100, accept_connection)
             return False
         else:
+            start_button.config(state="normal")
+            status_bar.config(text="Client connected")
             print("lol")
 
 def receive_message():
@@ -147,6 +159,7 @@ def receive_message():
         print("lul")
 
 def clicked(e):
+    print(e)
     pass
 
 # create window ----------------------------------------------------------------
@@ -215,7 +228,9 @@ root.minsize(root.winfo_width(), root.winfo_height())
 
 # bind redraw to resize event
 root.bind("<Configure>", lambda e: resize(e, canvas))
+root.bind("<Destroy>", lambda e: closed())
 canvas.bind("<Button-1>", lambda e: clicked(e))
+canvas.bind("<Motion>", lambda e: motion(e))
 
 # graphic setup ----------------------------------------------------------------
 draw_board(canvas)
