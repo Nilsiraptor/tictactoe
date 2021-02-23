@@ -5,11 +5,14 @@ from PIL import Image, ImageTk
 import publicip
 from contextlib import redirect_stdout
 import io
+from random import random
 
 # game variables ---------------------------------------------------------------
 ingame = False
 player = None
+current_player = None
 board_state = [0]*9
+next_move = None
 
 # connection variables ---------------------------------------------------------
 HEADER_SIZE = 2
@@ -56,7 +59,10 @@ def draw_circle(canvas, i, j):
     canvas.create_oval(x-width//8, y-height//8, x+width//8, y+height//8, width=12)
 
 def motion(e):
-    print(e)
+    if ingame:
+        if player == current_player:
+            print(e)
+            # draw gray player symbol at mouse location
 
 def resize(event, canvas):
     canvas.delete("all")
@@ -68,10 +74,21 @@ def closed():
         disconnect()
 
 def new_game():
-    pass
+    global ingame, current_player
+    ingame = True
+    if random() < 0.5:
+        current_player = 1
+        client_socket.send(int.to_bytes(1, 1, "big"))
+        status_text = "Game started - you begin"
+    else:
+        current_player = 2
+        client_socket.send(int.to_bytes(2, 1, "big"))
+        status_text = "Games started - the enemy begins"
+    status_bar.config(text=status_text)
+    root.after(20, update_game)
 
 def connect():
-    global client_socket, connected
+    global client_socket, connected, player
     if not connected:
         client_socket = socket(AF_INET, SOCK_STREAM)
         ip_str = join_entry.get().strip()
@@ -97,14 +114,16 @@ def connect():
 
         connected = True
 
-        root.after(100, receive_message)
+        player = 2
+
+        root.after(100, wait_for_game_start)
 
 def disconnect():
     global connected
     connected = False
 
 def start_server():
-    global server_socket, SERVER, IP
+    global server_socket, SERVER, IP, player
 
     if not SERVER:
         server_socket = socket(AF_INET, SOCK_STREAM)
@@ -129,7 +148,11 @@ def start_server():
         host_button.config(text="Stop Server")
 
         join_button.config(state="disabled")
+        join_entry.config(state="readonly")
         SERVER = True
+
+        player = 1
+
         root.after(100, accept_connection)
     else:
         host_button.config(text="Host Server")
@@ -138,6 +161,7 @@ def start_server():
         SERVER = False
 
 def accept_connection():
+    global client_socket
     if SERVER:
         try:
             client_socket, address = server_socket.accept()
@@ -145,22 +169,72 @@ def accept_connection():
             root.after(100, accept_connection)
             return False
         else:
+            client_socket.settimeout(0.001)
             start_button.config(state="normal")
             status_bar.config(text="Client connected")
-            print("lol")
 
-def receive_message():
+def wait_for_game_start():
+    global current_player, ingame
     if connected:
         try:
-            msg = client_socket.recv(1024)
+            data = client_socket.recv(1)
         except timeout as e:
-            root.after(100, receive_message)
+            root.after(100, wait_for_game_start)
             return False
-        print("lul")
+        else:
+            ingame = True
+            current_player = int.from_bytes(data, "big")
+            if current_player == player:
+                status_bar.config(text="Game started - you begin")
+            else:
+                status_bar.config(text="Game started - the enemy begins")
+            root.after(20, update_game)
+
+def update_game():
+    global current_player, next_move, board_state
+    draw_board(canvas)
+    if current_player == player:
+        if next_move == None:
+            root.after(20, update_game)
+            return False
+        else:
+            print(next_move)
+            if board_state[next_move] == 0:
+                board_state[next_move] = current_player
+                client_socket.send(int.to_bytes(next_move, 1, "big"))
+                if player == 1:
+                    current_player = 2
+                else:
+                    current_player = 1
+            next_move = None
+    else:
+        try:
+            data = client_socket.recv(1)
+        except timeout as e:
+            root.after(20, update_game)
+            return False
+        else:
+            board_state[int.from_bytes(data, "big")] = current_player
+            if current_player == 1:
+                current_player = 2
+            else:
+                current_player = 1
+
+    root.after(20, update_game)
+
 
 def clicked(e):
-    print(e)
-    pass
+    global next_move
+    if ingame and player == current_player:
+        x, y = e.x, e.y
+
+        width = canvas.winfo_width()
+        height = canvas.winfo_height()
+
+        x = x // (width//3)
+        y = y // (height//3)
+
+        next_move = x + 3*y
 
 # create window ----------------------------------------------------------------
 root = Tk()
